@@ -6,11 +6,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
-    
-</body>
 
 <script>
+    function submitUser(){
+        console.log('submit1 function');
+        var unameElem = document.getElementById('uname');
+        var roomnoElem = document.getElementById('roomno');
+        if(! (unameElem.value && roomnoElem.value) ){
+            return;
+        }
+
+        var data = {'uname': unameElem.value, 'roomno': roomnoElem.value};
+        fetch('/user', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(result => console.log(JSON.stringify(result)));
+    }
+</script>
+
+
+<script>
+    function hi(){
+        console.log('hi');
+    }
+</script>
+
+<body>
+    <input id="uname" type="text">
+    <input id="roomno" type="text">
+    <button onclick="submitUser()"> Submit </button>
+
+</body>
+
+</html>
+
+
+<!-- <script>
     let data = {element: "barium"};
 
     fetch('/pst', {
@@ -26,5 +61,4 @@
     fetch('/gt')
         .then(response => response.json())
         .then(msg => console.log(msg));
-</script>
-</html>
+</script> -->

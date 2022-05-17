@@ -25,10 +25,68 @@ const db = new sqlite3.Database(databaseName, (err) => {
     }
 });
 
+CreateT2();
+CreateDevices();
+CreateT1();
+CreateT3();
 
+
+// ---- index page ----
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
+
+app.get('/admin', (req, res) => {
+    res.sendFile(__dirname + '/admin.html');
+})
+
+// ---- Admin Routes(APIs) ----
+
+app.post('/adminAddUser', (req, res) => {
+    db.run(`
+        INSERT INTO T2(uname, previlage)
+        VALUES (
+            '${req.body.uname}',
+            ${req.body.previlage}
+        )`, (err) => {
+            if(err){
+                console.log(err);
+                var response = {'response': 'fail'};
+                res.send(JSON.stringify(response));
+            } else{
+                var response = {'response': 'success'};
+                res.send(JSON.stringify(response));
+            }
+        })
+})
+
+app.post('/adminAddDevices', (req, res) => {
+    db.run(`
+        INSERT INTO Devices(roomNo, devices)
+        VALUES (
+            ${req.body.roomno},
+            '${req.body.devices}'
+        )`, (err) => {
+            if(err) {
+                console.log(err);
+                var response = {'response': 'fail'};
+                res.send(JSON.stringify(response));
+            }else{
+                var response = {'response': 'success'};
+                res.send(JSON.stringify(response));
+            }
+        })
+})
+
+
+// ---- User Routes(APIs) ----
+
+app.post('/user', (req, res) => {
+    var response = {'status': 'done'};
+    console.log(req.body);
+    res.send(JSON.stringify(response));
+})
+
 
 app.post('/pst', (req, res) => {
     console.log('request received');
@@ -41,6 +99,37 @@ app.get('/gt', (req, res) => {
     res.send(JSON.stringify(msg));
 })
 
+function AddDataT2(uname, previlage){
+    db.run(`
+        INSERT INTO T2(uname, previlage)
+        VALUES (
+            '${uname}',
+            ${previlage}
+        )`, (err) => {
+            if(err){
+                console.log(err);
+                return false;
+            } else{
+                return true;
+            }
+        })
+}
+
+function AddDataDevices(roomno, devices){
+    db.run(`
+        INSERT INTO Devices(roomNo, devices)
+        VALUES (
+            ${roomno},
+            '${devices}'
+        )`, (err) => {
+            if(err) {
+                console.log(err);
+                return 0;
+            }
+            console.log('***** Success');
+            return 1;
+        })
+}
 
 function CreateT1(){
     db.run(`
@@ -56,6 +145,10 @@ function CreateT1(){
         )`, (err) => {
             if(err){
                 console.log(err);
+                return false;
+            } else {
+                // executed successfully
+                return true;
             }
         })
 }
@@ -67,6 +160,10 @@ function CreateDevices(){
         )`, (err) => {
             if(err){
                 console.log(err);
+                return false;
+            }else{
+                // executed successfully
+                return true;
             }
         })
 }
@@ -74,11 +171,15 @@ function CreateT2(){
     db.run(`
         CREATE TABLE T2 (
             uid INTEGER PRIMARY KEY AUTOINCREMENT,
-            uname VARCHAR(255) NOT NULL,
+            uname VARCHAR(255) NOT NULL UNIQUE,
             previlage INTEGER NOT NULL
         )`, (err) => {
             if(err){
                 console.log(err);
+                return false;
+            }else{
+                // executed succesfully
+                return true;
             }
         })
 }
@@ -92,6 +193,10 @@ function CreateT3(){
         )`, (err) => {
             if(err){
                 console.log(err);
+                return false;
+            }else{
+                // executed successfully
+                return true;
             }
         })
 }

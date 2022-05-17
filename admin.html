@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+</head>
+<style>
+    body{
+        margin-left: 100px;
+    }
+</style>
+<body>
+    <h1>Add User</h1>
+    <p>Uname: </p>
+    <input type="text" id="uname" >
+    <p>previlage</p>
+    <input type="text" id="previlage" >
+    <br>
+    <button onclick="addUser()">Add User</button>
+
+    <br><br><br><br><br>
+    <h1>Add Devices</h1>
+    <p>Room No: </p>
+    <input type="text" id="roomno">
+    <p>Devices: </p>
+    <input type="text" id="devices">
+    <br>
+    <button onclick="addDevice()">Add Device</button>
+</body>
+
+<script>
+    function addUser(){
+        var unameElem = document.getElementById('uname');
+        var previlageElem = document.getElementById('previlage');
+        var uname = unameElem.value;
+        var previlage = previlageElem.value;
+        unameElem.value = '';
+        previlageElem.value = '';
+
+        if(! (uname && previlage)){
+            return;
+        }
+
+        var data = {'uname': uname, 'previlage': previlage};
+        fetch('/adminAddUser', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(result => alert(result.response));
+    }
+
+    function addDevice(){
+        var roomnoElem= document.getElementById('roomno');
+        var devicesElem = document.getElementById('devices');
+        var roomno = roomnoElem.value;
+        var devices = devicesElem.value;
+        roomnoElem.value = '';
+        devicesElem.value = '';
+
+        if(! (roomno && devices)){
+            return;
+        }
+
+        var data = {'roomno': roomno, 'devices': devices};
+        fetch('/adminAddDevices', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(result => alert(result.response));
+    }
+</script>
+
+
+</html>
