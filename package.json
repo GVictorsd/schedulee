@@ -1,13 +1,13 @@
 {
   "name": "iotproject",
   "version": "1.0.0",
-  "description": "=> Credentials: username: vicping email: niserov197@dakcans.com pswd: @B2b2b2b2",
+  "description": "An IOT based Scheduling application",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "G.Victor Swaroop",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.1",
     "sqlite3": "^5.0.8"
