@@ -1,6 +1,7 @@
 
 //index.js
 
+const { fail } = require('assert');
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -82,22 +83,152 @@ app.post('/adminAddDevices', (req, res) => {
 // ---- User Routes(APIs) ----
 
 app.post('/user', (req, res) => {
-    var response = {'status': 'done'};
-    console.log(req.body);
-    res.send(JSON.stringify(response));
+    // Route regarding table T1
+
+    var uname, roomno;
+    var errorSent = 0;  // variable to ensure response was returned just once
+
+    // Check if the requested UserName exists in table T2
+    db.all(`SELECT * FROM T2 WHERE uname = '${req.body.uname}'`, (err, result) => {
+        if(err){
+            console.log(err);
+            var response = {
+                'response' : 'fail',
+                'msg' : 'UserName Not Found'
+            };
+            if(errorSent == 0){
+                errorSent++;
+                res.send(JSON.stringify(response));
+            }
+        }
+        else {
+            if(result.length != 0){
+                // userName found! store the queried data
+                uname = result[0];
+                console.log(uname);
+            }
+            else{
+                // no result was returned (no such userName)
+                var response = {
+                    'response' : 'fail',
+                    'msg' : 'UserName Not Found'
+                };
+                if(errorSent == 0){
+                    errorSent++;
+                    res.send(JSON.stringify(response));
+                }
+            }
+        }
+    })
+
+    // Check if the requested Room Number Exists
+    db.all(`SELECT * FROM Devices WHERE roomNo = ${req.body.roomno}`, (err, result) => {
+        if(err){
+            console.log(err);
+            var response = {
+                'response' : 'fail',
+                'msg' : 'Room Not Found'
+            };
+            if(errorSent == 0){
+                errorSent++;
+                res.send(JSON.stringify(response));
+            }
+        }
+        else {
+            if(result.length != 0){
+                // Room exists! Store the queried data
+                roomno = result[0];
+                console.log(roomno);
+            }
+            else{
+                // no response received(no such room found)
+                var response = {
+                    'response' : 'fail',
+                    'msg' : 'Room Not Found'
+                };
+                if(errorSent == 0){
+                    errorSent++;
+                    res.send(JSON.stringify(response));
+                }
+            }
+        }
+    })
+
+    // in T1, see if the room was booked before and if any of those bookings collide with
+    // current booking time
+    db.all(`SELECT * FROM T1 WHERE roomNo = ${req.body.roomno}`, (err, result) => {
+        if(err){
+            console.log(err);
+            var response = {
+                'response' : 'fail',
+                'msg': 'Database error'
+            };
+            if(errorSent == 0){
+                errorSent++;
+                res.send(JSON.stringify(response));
+            }
+        }
+        else{
+            var taken = false;
+            for(var i in result){
+                // TODO: check for priority before
+                if((i.timefrom >= req.body.from && i.timefrom <= req.body.to) ||
+                    (i.timeto >= req.body.from && i.timeto <= req.body.to)){
+                        taken = true;
+                        break;
+                }
+            }
+            if(taken){
+                // the timeslot is not available
+                var response = {
+                    'response': 'fail',
+                    'msg': 'Time Slot already taken'
+                };
+                if(errorSent == 0){
+                    errorSent++;
+                    res.send(JSON.stringify(response));
+                }
+            }
+            else{
+                //Update the database and send +ve response(list of Devices in the room)
+                db.run(`
+                    INSERT INTO T1(uid, roomNo, timefrom, timeto)
+                    VALUES (
+                        ${uname.uid},
+                        ${req.body.roomno},
+                        ${req.body.from},
+                        ${req.body.to}
+                    )`, (err) => {
+                        if(err){
+                            console.log(err);
+                            var response = {
+                                'response': 'fail',
+                                'msg': 'DataBase Error'
+                            };
+                            if(errorSent == 0){
+                                errorSent++;
+                                res.send(JSON.stringify(response));
+                            }
+                        }
+                        else{
+                            // Updated database successfully
+                            // send Devices in the room
+                            var response = {
+                                'response': 'success',
+                                'msg': 'List of Devices:',
+                                'Devices': roomno.devices
+                            };
+                            if(errorSent == 0){
+                                errorSent++;
+                                res.send(JSON.stringify(response));
+                            }
+                        }
+                })
+            }
+        }
+    })
 })
 
-
-app.post('/pst', (req, res) => {
-    console.log('request received');
-    console.log(req.body);
-});
-
-app.get('/gt', (req, res) => {
-    var msg = {'hello' : 'world'};
-    console.log('Get received');
-    res.send(JSON.stringify(msg));
-})
 
 function AddDataT2(uname, previlage){
     db.run(`

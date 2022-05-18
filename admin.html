@@ -7,28 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin</title>
 </head>
-<style>
-    body{
-        margin-left: 100px;
-    }
-</style>
-<body>
-    <h1>Add User</h1>
-    <p>Uname: </p>
-    <input type="text" id="uname" >
-    <p>previlage</p>
-    <input type="text" id="previlage" >
-    <br>
-    <button onclick="addUser()">Add User</button>
 
-    <br><br><br><br><br>
-    <h1>Add Devices</h1>
-    <p>Room No: </p>
-    <input type="text" id="roomno">
-    <p>Devices: </p>
-    <input type="text" id="devices">
-    <br>
-    <button onclick="addDevice()">Add Device</button>
+<body>
+    <h1 style="margin-left: 100px;">Admin</h1>
+    <br><br><br>
+
+    <div style="display: flex; justify-content: space-evenly;">
+    <div>
+        <h1>Add User</h1>
+        <p>Uname: </p>
+        <input type="text" id="uname" >
+        <p>previlage</p>
+        <input type="text" id="previlage" >
+        <br>
+        <button onclick="addUser()">Add User</button>
+    </div>
+
+    <div>
+        <h1>Add Devices</h1>
+        <p>Room No: </p>
+        <input type="text" id="roomno">
+        <p>Devices: </p>
+        <input type="text" id="devices">
+        <br>
+        <button onclick="addDevice()">Add Device</button>
+    </div>
+    </div>
+
 </body>
 
 <script>

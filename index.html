@@ -7,16 +7,58 @@
     <title>Document</title>
 </head>
 
+<style>
+    body{
+        margin-left: 100px;
+    }
+</style>
+
+
+<body>
+    <h1>Book a Room</h1>
+    <br><br>
+    <p>UserName:</p>
+    <input id="uname" type="text">
+    <br>
+    <p>Room No:</p>
+    <input id="roomno" type="text">
+    <br>
+    <p>From Time:</p>
+    <input type="text" id="from">
+    <br>
+    <p>To Time: </p>
+    <input type="text" id="to" >
+    <br>
+    <button onclick="submitUser()"> Submit </button>
+
+</body>
+
 <script>
     function submitUser(){
-        console.log('submit1 function');
         var unameElem = document.getElementById('uname');
         var roomnoElem = document.getElementById('roomno');
-        if(! (unameElem.value && roomnoElem.value) ){
+        var fromElem = document.getElementById('from');
+        var toElem = document.getElementById('to');
+        var uname = unameElem.value;
+        var roomno = roomnoElem.value;
+        var from = fromElem.value;
+        var to = toElem.value;
+        unameElem.value = '';
+        roomnoElem.value = '';
+        fromElem.value = '';
+        toElem.value = '';
+
+        if(! (uname && roomno && from && to) ){
             return;
         }
 
-        var data = {'uname': unameElem.value, 'roomno': roomnoElem.value};
+        var data = {
+            'uname': uname,
+            'roomno': roomno,
+            'from': from,
+            'to': to
+        };
+
         fetch('/user', {
             method: "POST",
             headers: {
@@ -27,20 +69,6 @@
             .then(result => console.log(JSON.stringify(result)));
     }
 </script>
-
-
-<script>
-    function hi(){
-        console.log('hi');
-    }
-</script>
-
-<body>
-    <input id="uname" type="text">
-    <input id="roomno" type="text">
-    <button onclick="submitUser()"> Submit </button>
-
-</body>
 
 </html>
 
