@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client</title>
+</head>
+
+<style>
+    body{
+        margin: 0px;
+        padding: 0px;
+    }
+    #ctnr{
+        position: absolute;
+        width: 100%;
+    }
+    #roomsContainer{
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        margin: 30px;
+        background-color:dimgrey;
+    }
+</style>
+
+<body>
+    <div id="ctnr">
+        <div id="roomsContainer">
+        </div>
+    </div>
+</body>
+
+<script>
+    addroom();
+    addroom();
+    addroom();
+    addDevice('D1', 0)
+    addDevice('D2', 0)
+    addDevice('D1', 1)
+    addDevice('D2', 2)
+    setDeviceState(0, 'D2', 1);
+    setDeviceState(2, 'D2', 1);
+
+    function addDevice(name, roomno){
+        var room = document.getElementById('roomsContainer').children[roomno];
+        var device = document.createElement('div');
+        device.style.position = 'relative';
+        device.id = name;
+        device.style.width = '100px';
+        device.style.height= '100px';
+        device.style.margin = '10px';
+        device.style.backgroundColor = 'purple';
+        device.innerText = name;
+        device.style.textAlign = 'center';
+
+        room.appendChild(device);
+    }
+
+    function addroom(){
+        var roomctnr = document.getElementById('roomsContainer');
+        var room = document.createElement('div');
+        room.style.position = 'relative';
+        room.style.width = '46%';
+        room.style.height = '300px';
+        room.style.backgroundColor = 'pink';
+        room.style.margin = '20px';
+        room.style.display = 'flex';
+        room.style.flexWrap = 'wrap';
+        roomctnr.appendChild(room);
+    }
+
+    function setDeviceState(roomno, devicename, state){
+        var device = document.getElementById('roomsContainer').children[roomno].querySelector('#'+devicename);
+        device.style.backgroundColor = state ? 'yellow' : 'violet';
+    }
+</script>
+</html>

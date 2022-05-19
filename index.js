@@ -157,6 +157,7 @@ app.post('/user', (req, res) => {
     // in T1, see if the room was booked before and if any of those bookings collide with
     // current booking time
     db.all(`SELECT * FROM T1 WHERE roomNo = ${req.body.roomno}`, (err, result) => {
+        console.log('checking T1 for other bookings of the room');
         if(err){
             console.log(err);
             var response = {
@@ -169,17 +170,20 @@ app.post('/user', (req, res) => {
             }
         }
         else{
+            console.log('no database error found');
             var taken = false;
             for(var i in result){
                 // TODO: check for priority before
-                if((i.timefrom >= req.body.from && i.timefrom <= req.body.to) ||
-                    (i.timeto >= req.body.from && i.timeto <= req.body.to)){
+                console.log('Checking room: ' + result[i].timefrom + '-> ' + result[i].timeto);
+                if((result[i].timefrom >= req.body.from && result[i].timefrom <= req.body.to) ||
+                    (result[i].timeto >= req.body.from && result[i].timeto <= req.body.to)){
                         taken = true;
                         break;
                 }
             }
             if(taken){
                 // the timeslot is not available
+                console.log('Room already taken');
                 var response = {
                     'response': 'fail',
                     'msg': 'Time Slot already taken'
@@ -191,39 +195,43 @@ app.post('/user', (req, res) => {
             }
             else{
                 //Update the database and send +ve response(list of Devices in the room)
-                db.run(`
-                    INSERT INTO T1(uid, roomNo, timefrom, timeto)
-                    VALUES (
-                        ${uname.uid},
-                        ${req.body.roomno},
-                        ${req.body.from},
-                        ${req.body.to}
-                    )`, (err) => {
-                        if(err){
-                            console.log(err);
-                            var response = {
-                                'response': 'fail',
-                                'msg': 'DataBase Error'
-                            };
-                            if(errorSent == 0){
-                                errorSent++;
-                                res.send(JSON.stringify(response));
+                console.log('room available!!');
+                if(uname && roomno){
+                    console.log('running insert operation');
+                    db.run(`
+                        INSERT INTO T1(uid, roomNo, timefrom, timeto)
+                        VALUES (
+                            ${uname.uid},
+                            ${req.body.roomno},
+                            ${req.body.from},
+                            ${req.body.to}
+                        )`, (err) => {
+                            if(err){
+                                console.log(err);
+                                var response = {
+                                    'response': 'fail',
+                                    'msg': 'DataBase Error'
+                                };
+                                if(errorSent == 0){
+                                    errorSent++;
+                                    res.send(JSON.stringify(response));
+                                }
                             }
-                        }
-                        else{
-                            // Updated database successfully
-                            // send Devices in the room
-                            var response = {
-                                'response': 'success',
-                                'msg': 'List of Devices:',
-                                'Devices': roomno.devices
-                            };
-                            if(errorSent == 0){
-                                errorSent++;
-                                res.send(JSON.stringify(response));
+                            else{
+                                // Updated database successfully
+                                // send Devices in the room
+                                var response = {
+                                    'response': 'success',
+                                    'msg': 'List of Devices:',
+                                    'Devices': roomno.devices
+                                };
+                                if(errorSent == 0){
+                                    errorSent++;
+                                    res.send(JSON.stringify(response));
+                                }
                             }
-                        }
-                })
+                    })
+                }
             }
         }
     })
