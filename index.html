@@ -15,25 +15,82 @@
 
 
 <body>
-    <h1>Book a Room</h1>
-    <br><br>
-    <p>UserName:</p>
-    <input id="uname" type="text">
-    <br>
-    <p>Room No:</p>
-    <input id="roomno" type="text">
-    <br>
-    <p>From Time:</p>
-    <input type="text" id="from">
-    <br>
-    <p>To Time: </p>
-    <input type="text" id="to" >
-    <br>
-    <button onclick="submitUser()"> Submit </button>
+    <div id="view1">
+        <h1>Book a Room</h1>
+        <br><br>
+        <p>UserName:</p>
+        <input id="uname" type="text">
+        <br>
+        <p>Room No:</p>
+        <input id="roomno" type="text">
+        <br>
+        <p>From Time:</p>
+        <input type="text" id="from">
+        <br>
+        <p>To Time: </p>
+        <input type="text" id="to" >
+        <br>
+        <button onclick="submitUser()"> Submit </button>
+    </div>
+
+    <div id="view2" style="visibility: hidden;">
+        <h1>Select devices</h1>
+        <h2>Available Devices: </h2>
+        <div id="devices"></div>
+        <br><br><br>
+        <p>Enter Devices to be selected</p>
+        <input type="text" id="selectedDevics">
+        <button onclick="submitDevices()"> Submit </button>
+    </div>
 
 </body>
 
 <script>
+    var AvailableDevices, ScheduleNumber;
+
+    function submitDevices(){
+        var devicesCtnr = document.getElementById('selectedDevices');
+        var devices = devicesCtnr.value;
+        var data = {
+            "devices" : devices,
+            "scheduleNo" : ScheduleNumber
+        }
+        
+        fetch('/userDevices', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+            .then(result => console.log(JSON.stringify(result)));
+    }
+    function renderView2(result){
+        document.getElementById('view1').style.visibility = 'hidden';
+        document.getElementById('view1').style.height = '0px';
+        document.getElementById('view2').style.visibility = 'visible';
+        var availDevices = document.getElementById('devices');
+        var devices = result.Devices.split(',');
+        for(device in devices){
+            var cont = document.createElement('li');
+            cont.textContent = devices[device];
+            availDevices.appendChild(cont);
+        }
+    }
+    function formatTime(timestr){
+        var str = timestr.split(' ');
+        var time = {};
+        var now = new Date();
+        time.hr = parseInt(str[0]);
+        time.min = parseInt(str[1]);
+        time.sec = str[2] ? parseInt(str[2]) : 0;
+        time.date = str[3] ? parseInt(str[3]) : now.getDate();
+        time.month = str[4] ? parseInt(str[4]) : now.getMonth();
+        time.yr = str[5] ? parseInt(str[5]) : now.getFullYear();
+        console.log(time);
+        return JSON.stringify(time);
+    }
+
     function submitUser(){
         var unameElem = document.getElementById('uname');
         var roomnoElem = document.getElementById('roomno');
@@ -55,8 +112,8 @@
         var data = {
             'uname': uname,
             'roomno': roomno,
-            'from': from,
-            'to': to
+            'from': formatTime(from),
+            'to': formatTime(to)
         };
 
         fetch('/user', {
@@ -66,7 +123,12 @@
             },
             body: JSON.stringify(data)
         }).then(response => response.json())
-            .then(result => console.log(JSON.stringify(result)));
+            .then(result => {
+                console.log(JSON.stringify(result));
+                ScheduleNumber = parseInt( result.scheduleNo);
+                AvailableDevices = result.Devices;
+                renderView2(result);
+            });
     }
 </script>
 

@@ -1,7 +1,7 @@
 
 //index.js
 
-const { fail } = require('assert');
+// const { fail } = require('assert');
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -81,9 +81,23 @@ app.post('/adminAddDevices', (req, res) => {
 
 
 // ---- User Routes(APIs) ----
+app.post('/userDevices', (req, res) => {
+    console.log('user Date Route');
+    console.log(req.body);
+    var response = {
+        'response': 'success',
+        'data': 'T3 Table modified successfully'
+    }
+    res.send(JSON.stringify(response));
+})
 
 app.post('/user', (req, res) => {
     // Route regarding table T1
+    console.log(req.body);
+    var from = JSON.parse(req.body.from);
+    req.body.from = new Date(from.yr, from.month, from.date, from.hr, from.min, from.sec).getTime();
+    var to = JSON.parse(req.body.to);
+    req.body.to = new Date(to.yr, to.month, to.date, to.hr, to.min, to.sec).getTime();
 
     var uname, roomno;
     var errorSent = 0;  // variable to ensure response was returned just once
@@ -220,15 +234,25 @@ app.post('/user', (req, res) => {
                             else{
                                 // Updated database successfully
                                 // send Devices in the room
-                                var response = {
-                                    'response': 'success',
-                                    'msg': 'List of Devices:',
-                                    'Devices': roomno.devices
-                                };
-                                if(errorSent == 0){
-                                    errorSent++;
-                                    res.send(JSON.stringify(response));
-                                }
+
+                                // get schedule number for the current entry
+                                db.all(`SELECT max(scheduleNo) FROM T1`, (err, result) => {
+                                    if(err){
+                                        console.log(err);
+                                    }
+                                    console.log(result);
+
+                                    var response = {
+                                        'response': 'success',
+                                        'msg': 'List of Devices:',
+                                        'scheduleNo' : `${result[0]['max(scheduleNo)']}`,
+                                        'Devices': roomno.devices
+                                    };
+                                    if(errorSent == 0){
+                                        errorSent++;
+                                        res.send(JSON.stringify(response));
+                                    }
+                                })
                             }
                     })
                 }
