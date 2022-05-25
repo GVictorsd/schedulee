@@ -26,7 +26,7 @@ client.on('message', function (topic, message) {
 });
 
 // subscribe to topic 'my/test/topic'
-client.subscribe('hello');
+client.subscribe('schedule');
 
 // publish message 'Hello' to topic 'my/test/topic'
 //client.publish('my/test/topic', 'Hello');

@@ -39,7 +39,7 @@
         <div id="devices"></div>
         <br><br><br>
         <p>Enter Devices to be selected</p>
-        <input type="text" id="selectedDevics">
+        <input type="text" id="selectedDevices">
         <button onclick="submitDevices()"> Submit </button>
     </div>
 
@@ -47,13 +47,16 @@
 
 <script>
     var AvailableDevices, ScheduleNumber;
+    var fromTime, toTime;
 
     function submitDevices(){
         var devicesCtnr = document.getElementById('selectedDevices');
         var devices = devicesCtnr.value;
         var data = {
             "devices" : devices,
-            "scheduleNo" : ScheduleNumber
+            "scheduleNo" : ScheduleNumber,
+            "from": fromTime,
+            "to": toTime
         }
         
         fetch('/userDevices', {
@@ -63,8 +66,17 @@
             },
             body: JSON.stringify(data)
         }).then(response => response.json())
-            .then(result => console.log(JSON.stringify(result)));
+            .then(result => {
+                if(result.response === 'fail'){
+                    alert(result.msg);
+                }
+                else{
+                    alert('Schedule added!');
+                    window.location.href = '/';
+                }
+            });
     }
+
     function renderView2(result){
         document.getElementById('view1').style.visibility = 'hidden';
         document.getElementById('view1').style.height = '0px';
@@ -77,6 +89,7 @@
             availDevices.appendChild(cont);
         }
     }
+
     function formatTime(timestr){
         var str = timestr.split(' ');
         var time = {};
@@ -124,10 +137,20 @@
             body: JSON.stringify(data)
         }).then(response => response.json())
             .then(result => {
-                console.log(JSON.stringify(result));
-                ScheduleNumber = parseInt( result.scheduleNo);
-                AvailableDevices = result.Devices;
-                renderView2(result);
+                if(result.response === 'fail'){
+                    // request failed!! reset the page
+                    alert(result.msg);
+                    window.location.href = '/';
+                }
+                else{
+                    // got the result!
+                    ScheduleNumber = parseInt( result.scheduleNo);
+                    AvailableDevices = result.Devices;
+                    fromTime = result.from;
+                    toTime = result.to;
+                    console.log(JSON.stringify(result));
+                    renderView2(result);
+                }
             });
     }
 </script>

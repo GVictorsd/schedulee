@@ -13,6 +13,28 @@ const sqlite3 = require('sqlite3');
 app.use(express.json());
 app.use(express.urlencoded());
 
+// scheduling
+const schedule = require('node-schedule');
+
+const mqtt = require('mqtt')
+var MQTToptions = {
+    host: '15ebb79b7e324144a12afa463b2a68e6.s1.eu.hivemq.cloud',
+    port: 8883,
+    protocol: 'mqtts',
+    username: 'vicping',
+    password: '@B2b2b2b2'
+}
+var MQTTclient = mqtt.connect(MQTToptions);
+
+//MQTT callbacks
+MQTTclient.on('connect', function () {
+    console.log('Connected to the MQTT Broker');
+});
+
+MQTTclient.on('error', function (error) {
+    console.log('MQTT Connection Error!!!');
+    console.log(error);
+});
 
 const databaseName = 'mydata.db';
 
@@ -82,13 +104,34 @@ app.post('/adminAddDevices', (req, res) => {
 
 // ---- User Routes(APIs) ----
 app.post('/userDevices', (req, res) => {
-    console.log('user Date Route');
+    console.log('*** Route: /userDevices ')
     console.log(req.body);
-    var response = {
-        'response': 'success',
-        'data': 'T3 Table modified successfully'
-    }
-    res.send(JSON.stringify(response));
+    db.run(`
+        INSERT INTO T3(scheduleNo, devices)
+        VALUES (
+            ${req.body.scheduleNo},
+            '${req.body.devices}'
+        )`, (err) => {
+            var response = {};
+            if(err){
+                console.log(err);
+                response = {
+                    'response' : 'fail',
+                    'msg': 'database error'
+                }
+            }
+            else{
+                var time = new Date();
+                time.setTime(req.body.from);
+                setEvent(time, req.body.scheduleNo);
+                response = {
+                    'response': 'success',
+                    'msg': 'event set successfully'
+                }
+            }
+            res.send(JSON.stringify(response));
+        })
+
 })
 
 app.post('/user', (req, res) => {
@@ -244,8 +287,9 @@ app.post('/user', (req, res) => {
 
                                     var response = {
                                         'response': 'success',
-                                        'msg': 'List of Devices:',
                                         'scheduleNo' : `${result[0]['max(scheduleNo)']}`,
+                                        'from': req.body.from,
+                                        'to': req.body.to,
                                         'Devices': roomno.devices
                                     };
                                     if(errorSent == 0){
@@ -260,6 +304,38 @@ app.post('/user', (req, res) => {
         }
     })
 })
+
+function setEvent(time, scheduleNo){
+    console.log('event set!!!');
+    schedule.scheduleJob(time, () => {
+        console.log('event occured at ' + time.getHours() + ':' + time.getMinutes());
+        db.all(`
+            SELECT * FROM T1
+            INNER JOIN T3
+            ON T3.scheduleNo = ${scheduleNo} AND T3.scheduleNo = T1.scheduleNo
+        `, (err, result) => {
+            if(err){
+                console.log(err);
+            }
+            else{
+                console.log(result);
+                MQTTclient.publish('schedule', JSON.stringify(result[0]));
+                console.log('Notified via MQTT');
+            }
+        })
+    })
+}
+// function setSchedule(time, a){
+//     schedule.scheduleJob(time, function(){
+//         console.log('Reminder at 12:14');
+//         console.log(a);
+//     });
+// }
+
+// var date = new Date(2022, 4, 25, 16, 50, 30);
+// var a = 'hello';
+// setSchedule(date, a);
+// console.log('returned for call 1');
 
 
 function AddDataT2(uname, previlage){
@@ -349,7 +425,7 @@ function CreateT2(){
 function CreateT3(){
     db.run(`
         CREATE TABLE T3 (
-            scheduleNo INTEGER NOT NULL,
+            scheduleNo INTEGER UNIQUE NOT NULL,
             devices VARCHAR(255) NOT NULL,
 
             FOREIGN KEY(scheduleNo) REFERENCES T1(scheduleNo)
