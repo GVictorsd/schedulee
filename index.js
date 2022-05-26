@@ -1,7 +1,7 @@
 
 //index.js
 
-// const { fail } = require('assert');
+const { fail } = require('assert');
 const express = require('express');
 const app = express();
 const http = require('http');

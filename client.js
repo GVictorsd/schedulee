@@ -1,3 +1,10 @@
+/************************************************************************
+ * --- CLIENT.JS ---
+ * Module to receive messages from the broker sent by the server
+ * mimics the behaviour of a client hosting network of actuators
+
+*************************************************************************/
+
 var mqtt = require('mqtt')
 
 var options = {
