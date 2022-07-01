@@ -1,3 +1,5 @@
 *.db
 *.txt
 node_modules
+RasPiClient/paho-mqtt-1.6.1
+RasPiClient/paho
